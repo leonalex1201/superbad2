@@ -90,10 +90,11 @@ if (!ev) {
   ].filter(Boolean);
 
   const photos = typeof getPhotoUrls === 'function' ? getPhotoUrls(ev) : [];
+  const thumbs = typeof getThumbUrls === 'function' ? getThumbUrls(ev) : photos;
 
   box.innerHTML = `
     <h1 class="detail-title display">${ev.name}</h1>
-    <div class="detail-top party-card">
+    <div class="detail-top party-card${ev.poster ? '' : ' no-poster'}">
       ${ev.poster ? `<figure class="poster" style="margin:0"><img src="${ev.poster}" alt="Αφίσα: ${ev.name}"></figure>` : ''}
       <article class="info">
         <p class="info-tag">${ev.date}</p>
@@ -113,7 +114,7 @@ if (!ev) {
     <div class="photo-grid">
       ${photos.map((src, idx) => `
         <button class="photo-item" type="button" data-src="${src}" data-index="${idx}" aria-label="Άνοιγμα φωτογραφίας ${idx + 1}" style="padding:0">
-          <img src="${src}" alt="" loading="lazy" decoding="async" onerror="handleImageFallback(this)">
+          <img src="${thumbs[idx]}" alt="" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='${src}'">
         </button>
       `).join('')}
     </div>` : '<p class="empty-note">Οι φωτογραφίες ανεβαίνουν σύντομα.</p>'}
@@ -188,6 +189,10 @@ if (!ev) {
     if (diff > 50)  prevPhoto();
     if (diff < -50) nextPhoto();
   }, { passive: true });
+
+  /* Άνοιγμα συγκεκριμένης φωτογραφίας από την αρχική (past.html?event=...&photo=3) */
+  const startPhoto = parseInt(params.get('photo'), 10);
+  if (startPhoto > 0) showPhoto(startPhoto - 1);
 }
 </script>
 </body>

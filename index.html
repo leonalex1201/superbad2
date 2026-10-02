@@ -49,7 +49,7 @@
 <!-- HERO: video με το logo αριστερά, αφίσα δεξιά -->
 <section class="hero" id="home">
   <div class="hero-media">
-    <video class="hero-video" autoplay muted loop playsinline poster="hero-bg.jpg">
+    <video class="hero-video" autoplay muted loop playsinline preload="auto" disablepictureinpicture disableremoteplayback poster="hero-bg.jpg">
       <source src="hero.mp4" type="video/mp4">
       <source src="hero.mov" type="video/mp4">
     </video>
@@ -103,7 +103,7 @@
 
         <div class="info-actions">
           <a class="btn" id="nMap" href="#" target="_blank" rel="noopener" hidden>Δες το στον χάρτη</a>
-          <a class="btn ghost" id="nCta" href="https://www.instagram.com/superbadparty/" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-ig"/></svg>Follow στο Instagram</a>
+          <a class="btn ghost" id="nCta" href="https://www.instagram.com/superbad_party/" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-ig"/></svg>Follow στο Instagram</a>
         </div>
       </article>
     </div>
@@ -114,8 +114,9 @@
 <section class="section past" id="past" hidden>
   <div class="wrap">
     <h2 class="section-title display">Past parties</h2>
-    <p class="past-intro">Τα πάρτυ μας από τότε που λεγόμασταν PARA PERA. Πάτα σε ένα για αφίσα και φωτογραφίες.</p>
-    <div class="past-grid" id="pastGrid"></div>
+    <p class="past-intro">Τα πάρτυ μας από τότε που λεγόμασταν PARA PERA. Διάλεξε ένα για να δεις φωτογραφίες.</p>
+    <div class="pp-tabs" id="ppTabs" role="tablist" aria-label="Προηγούμενα πάρτυ"></div>
+    <div class="pp-panel" id="ppPanel" role="tabpanel"></div>
   </div>
 </section>
 
@@ -134,8 +135,8 @@
           </div>
         </div>
         <div class="partner-links">
-          <a class="chip js-ig" href="https://www.instagram.com/superbadparty/" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-ig"/></svg><span class="js-ig-handle">@superbadparty</span></a>
-          <a class="chip js-tt" href="https://www.tiktok.com/@superbadparty" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-tt"/></svg><span class="js-tt-handle">@superbadparty</span></a>
+          <a class="chip js-ig" href="https://www.instagram.com/superbad_party/" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-ig"/></svg><span class="js-ig-handle">@superbad_party</span></a>
+          <a class="chip js-tt" href="https://www.tiktok.com/@superbad_party" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-tt"/></svg><span class="js-tt-handle">@superbad_party</span></a>
         </div>
       </div>
 
@@ -161,8 +162,8 @@
 <footer class="site-footer">
   <img src="logo-sticker.svg" alt="SUPERBAD" class="footer-logo" width="900" height="375" loading="lazy">
   <div class="footer-social">
-    <a class="js-ig" href="https://www.instagram.com/superbadparty/" target="_blank" rel="noopener" aria-label="Instagram"><svg aria-hidden="true"><use href="#i-ig"/></svg></a>
-    <a class="js-tt" href="https://www.tiktok.com/@superbadparty" target="_blank" rel="noopener" aria-label="TikTok"><svg aria-hidden="true"><use href="#i-tt"/></svg></a>
+    <a class="js-ig" href="https://www.instagram.com/superbad_party/" target="_blank" rel="noopener" aria-label="Instagram"><svg aria-hidden="true"><use href="#i-ig"/></svg></a>
+    <a class="js-tt" href="https://www.tiktok.com/@superbad_party" target="_blank" rel="noopener" aria-label="TikTok"><svg aria-hidden="true"><use href="#i-tt"/></svg></a>
   </div>
   <p class="footer-copy">© <span id="yr"></span> SUPERBAD</p>
 </footer>
@@ -227,16 +228,22 @@ const PAST = typeof PAST_EVENTS !== 'undefined' ? PAST_EVENTS : [];
 if (PAST.length) {
   $('past').hidden = false;
   $('navPast').hidden = false;
-  $('pastGrid').innerHTML = PAST.map(e => {
-    const cover = e.poster || (getPhotoUrls(e)[0] || '');
-    const n = getPhotoUrls(e).length;
-    return `<a href="past.html?event=${e.slug}" class="past-card">
-      <div class="thumb"><img src="${cover}" alt="Αφίσα: ${e.name}" loading="lazy"></div>
-      <div class="name">${e.label}</div>
-      <div class="meta">${e.date}${e.venue ? ', ' + e.venue : ''}</div>
-      ${n ? `<span class="more">${n} φωτογραφίες</span>` : ''}
-    </a>`;
-  }).join('');
+  const thumbsOf = e => (typeof getThumbUrls === 'function' ? getThumbUrls(e) : getPhotoUrls(e));
+  $('ppTabs').innerHTML = PAST.map((e, i) =>
+    `<button class="pp-tab" type="button" role="tab" data-i="${i}" aria-selected="false">${e.label}<small>${e.date}</small></button>`).join('');
+  const showParty = i => {
+    const e = PAST[i];
+    document.querySelectorAll('.pp-tab').forEach(t => t.setAttribute('aria-selected', t.dataset.i == i));
+    const thumbs = thumbsOf(e);
+    const meta = [e.date, e.venue, e.lineup ? 'DJs: ' + e.lineup : ''].filter(Boolean);
+    $('ppPanel').innerHTML = `
+      <p class="pp-meta">${meta.map(m => `<span>${m}</span>`).join('')}</p>
+      <div class="pp-grid">${thumbs.slice(0, 8).map((t, k) =>
+        `<a class="pp-photo" href="past.html?event=${e.slug}&photo=${k + 1}" aria-label="Φωτογραφία ${k + 1}"><img src="${t}" alt="" loading="lazy" onerror="this.onerror=null;this.src=this.src.replace('/thumbs/','/')"></a>`).join('')}</div>
+      <a class="btn pp-all" href="past.html?event=${e.slug}">Όλες οι φωτογραφίες (${thumbs.length})</a>`;
+  };
+  document.querySelectorAll('.pp-tab').forEach(t => t.addEventListener('click', () => showParty(+t.dataset.i)));
+  showParty(PAST.length - 1);
   $('navPastMenu').innerHTML = PAST.map(e => `<a href="past.html?event=${e.slug}">${e.label}</a>`).join('');
   $('mobilePastList').innerHTML = PAST.map(e => `<a href="past.html?event=${e.slug}" onclick="closeMobile()">${e.label}</a>`).join('');
 
@@ -258,6 +265,18 @@ mBtn.addEventListener('click', () => {
   mBtn.textContent = o ? 'Close' : 'Menu';
   mBtn.setAttribute('aria-expanded', o);
 });
+/* Video: παίζει μόνο του. Αν το κινητό το μπλοκάρει (π.χ. εξοικονόμηση μπαταρίας),
+   δείχνουμε την ακίνητη εικόνα αντί για κουμπί play. */
+const heroVideo = document.querySelector('.hero-video');
+if (heroVideo) {
+  heroVideo.muted = true; heroVideo.defaultMuted = true;
+  const p = heroVideo.play();
+  if (p && p.catch) p.catch(() => heroVideo.classList.add('no-autoplay'));
+  const retry = () => heroVideo.play().then(() => heroVideo.classList.remove('no-autoplay')).catch(() => {});
+  document.addEventListener('touchstart', retry, { once: true, passive: true });
+  document.addEventListener('click', retry, { once: true });
+}
+
 function closeMobile() {
   mMenu.classList.remove('open');
   mBtn.textContent = 'Menu';
