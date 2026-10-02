@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;800&family=Commissioner:wght@400;600;700;800&display=swap">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=7">
 </head>
 <body>
 
@@ -35,7 +35,7 @@
   <button class="lightbox-nav-btn lb-next" id="lbNext" aria-label="Επόμενη" type="button">&#8250;</button>
 </div>
 
-<script src="events.js"></script>
+<script src="events.js?v=7"></script>
 <script>
 const params = new URLSearchParams(location.search);
 const evSlug = params.get('event') || (typeof PAST_EVENTS !== 'undefined' && PAST_EVENTS[0] ? PAST_EVENTS[0].slug : null);
